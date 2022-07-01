@@ -24,7 +24,7 @@ jobs:
     - uses: mr-smithers-excellent/docker-build-push@v5
       name: Build & push Docker image -> Gateway Service
       with:
-        image: codecamplao/laokyc-gateway-service
+        image: vilakhanit/apigateway
         tags: 1.0.0, latest
         registry: docker.io        
         username: ${{ secrets.DOCKER_USERNAME }}
