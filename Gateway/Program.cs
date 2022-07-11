@@ -7,6 +7,7 @@ using System.Diagnostics;
 
 var testGithub = "github";
 var testGithub2 = "github2";
+var testGithub3 = "github3";
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.RegisterHttpClientService();
 
