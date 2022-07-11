@@ -1,3 +1,5 @@
+using CustomerService.Interface;
+using CustomerService.Service;
 using HttpClientService;
 using MSQP.SDK.DOTNET;
 using MSQP.Shared.Configuration;
@@ -14,6 +16,7 @@ var kafkaConf = builder.Configuration.GetSection(nameof(KafkaConfiguration)).Get
 builder.Services.AddSingleton(kafkaConf);
 //Add Queue service
 builder.Services.AddSingleton<IQueueService, QueueService>();
+builder.Services.AddSingleton<ICustomerFunc, CustomerRead>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -54,6 +57,15 @@ app.MapPost("/usesdk", async (IQueueService queueService) =>
     return Results.Ok(new { time = $"Use Time: {stopwatch.Elapsed.TotalSeconds}"});
 })
 .WithName("usesdk");
+
+
+app.MapPost("/customerfunc", async (IQueueService queueService) =>
+{
+    ICustomerFunc customerFunc = new CustomerRead();
+    return Results.Ok(new { text = customerFunc.Read() });
+})
+.WithName("customerfunc");
+
 
 app.Run();
 
