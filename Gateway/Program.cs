@@ -5,6 +5,7 @@ using MSQP.SDK.DOTNET;
 using MSQP.Shared.Configuration;
 using System.Diagnostics;
 
+var testGithub = "github";
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.RegisterHttpClientService();
 
