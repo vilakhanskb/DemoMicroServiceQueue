@@ -25,5 +25,5 @@ app.Run();
 
 internal record Customer(string name, string lastname, int age)
 {
-    
+
 }
