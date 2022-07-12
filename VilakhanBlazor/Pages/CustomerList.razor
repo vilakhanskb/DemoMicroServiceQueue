@@ -1,0 +1,146 @@
+﻿@page "/customerlist"
+@using HttpClientService
+@using System.Text.Json
+@using VilakhanBlazor.Entities
+@inject IHttpService httpClient
+<h3>CustomerList</h3>
+
+<EditForm Model="createModel" OnSubmit="Submit">
+    <DataAnnotationsValidator />
+    <label>ID:</label>
+    <input type="number" class="form-control" @bind="createModel.id" />
+    <ValidationMessage For="() => createModel.id" />
+
+    <label>Name:</label>
+    <input type="text" class="form-control" @bind="createModel.name" />
+    <ValidationMessage For="() => createModel.name" />
+
+    <label>Lastname:</label>
+    <input type="text" class="form-control" @bind="createModel.lastname" />
+
+    <label>Age:</label>
+    <input type="number" class="form-control" @bind="createModel.age" />
+
+    <hr />
+    <button type="submit" class="btn btn-primary">Submit</button>
+</EditForm>
+@if (!string.IsNullOrWhiteSpace(message))
+{
+    <div class="alert alert-info">@message</div>
+}
+@if (customerDbs != null)
+{
+    if (customerDbs.Count > 0)
+    {
+        <table>
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Firstname</th>
+                    <th>Lastname</th>
+                    <th>age</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var item in customerDbs)
+                {
+                    <tr>
+                        <td>@item.id</td>
+                        <td>@item.name</td>
+                        <td>@item.lastname</td>
+                        <td>@item.age</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <h4>No records</h4>
+    }
+
+}
+else
+{
+
+}
+
+@code {
+    string message = "";
+    Datum createModel = new();
+
+    List<Datum> customerDbs = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        //Get
+        var result = await httpClient.Get<CustomerDb>("http://localhost:5289/getcustomer").ConfigureAwait(false);
+
+        //Delete
+        var resultDelete = await httpClient.Delete<ResponseModel>("http://localhost:5289/deletecustomer/4238482938").ConfigureAwait(false);
+
+        if (result.Success)
+        {
+            if (result.Response.code == 200)
+            {
+                customerDbs = result.Response.data;
+
+                //foreach (var item in result.Response.data)
+                //{
+                //    Datum datum = new()
+                //    {
+                //        age = item.age,
+                //        id = item.id,
+                //        lastname = item.lastname,
+                //        name = item.name
+                //    };
+                //    customerDbs.Add(datum);
+                //}
+
+            }
+        }
+    }
+
+    private async Task Submit(EditContext context)
+    {
+        var isvalid = context.Validate();
+        if (isvalid)
+        {
+            //Call Api
+          
+            //var result = await httpClient.Post<Datum, ResponseModel>("http://localhost:5289/createcustomer", createModel,
+            //new AuthorizeHeader("bearer", "395394759379sdfsdfihh4ghd7g")).ConfigureAwait(false);
+
+            //Post
+            var result = await httpClient.Post<Datum, ResponseModel>("http://localhost:5289/createcustomer", createModel).ConfigureAwait(false);
+            
+            //Put
+            var resultUpdate = await httpClient.Put<Datum, ResponseModel>("http://localhost:5289/updatecustomer", createModel).ConfigureAwait(false);
+            
+            if (result.Success)
+            {
+                var resultJson = JsonSerializer.Deserialize<ResponseModel>(result.HttpResponseMessage.Content.ReadAsStringAsync().Result);
+                
+                if (result.Response.code == 200)
+                {
+                    message = result.Response.message;
+                }
+                else
+                {
+                    message = "Fail to submit";
+                }
+            }
+            else
+            {
+                message = "Fail to submit";
+            }
+        }
+        else
+        {
+            //Check form data again
+            message = "Please check the data input";
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+}
