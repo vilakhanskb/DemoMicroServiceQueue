@@ -1,0 +1,110 @@
+﻿@page "/Customer"
+@using HttpClientService
+@inject IHttpService httpClient
+@using System.Text.Json
+@using Touyang.Entities
+
+<EditForm Model="createModel" OnSubmit="Submit">
+    <DataAnnotationsValidator/>
+    <label>ID</label>
+    <input type="number" class="form-control" @bind="createModel.id" />
+    <ValidationMessage For="() => createModel.id" />
+    <label>name</label>
+    <input type="text" class="form-control" @bind="createModel.name" />
+    <ValidationMessage For="() => createModel.name" />
+    <label>Lastname</label>
+    <input type="text" class="form-control" @bind="createModel.lastname" />
+    <label>age</label>
+    <input type="number" class="form-control" @bind="createModel.age" />
+    <button type="submit" class="btn btn-danger">Submit</button>
+</EditForm>
+@if(!string.IsNullOrWhiteSpace(message))
+{
+    <div class="alert alert-primary">@message</div>
+}
+<h3>CustomerList</h3>
+@if (customerDbs != null)
+{
+    if (customerDbs.Count > 0)
+    {
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Firtname</th>
+                    <th>Lastname</th>
+                    <th>age</th>
+                </tr>
+            </thead>
+        </table>
+        <tbody>
+            @foreach (var item in customerDbs)
+            {
+                <tr>
+                    <tb>@item.id</tb>
+                    <tb>@item.name</tb>
+                    <tb>@item.lastname</tb>
+                    <tb>@item.age</tb>
+                </tr>
+            }
+        </tbody>
+
+    }
+
+}
+else
+{
+    <h4>No recode</h4>
+}
+
+
+@code {
+    string message = "";
+    Datum createModel = new();
+    List<Datum> customerDbs = new();
+    protected override async Task OnInitializedAsync()
+    {
+
+
+        var resualt = await httpClient.Get<CustomerDb>("http://localhost:5289/getcustomer").ConfigureAwait(false);
+
+        if (resualt.Success)
+        {
+            if (resualt.Response.code == 200)
+            {
+                customerDbs = resualt.Response.data;
+            }
+        }
+    }
+    private async Task Submit(EditContext context)
+    {
+        var isvalid = context.Validate();
+        if (isvalid)
+        {
+            var resualt = await httpClient.Post<Datum, ResponseModel>("http://localhost:5289/createcustomer", createModel).ConfigureAwait(false);
+            if(resualt.Success)
+            {
+                var resultJson = JsonSerializer.Deserialize<ResponseModel>(resualt.HttpResponseMessage.Content.ReadAsByteArrayAsync().Result);
+                if(resualt.Response.code == 200)
+                {
+                    message = resualt.Response.message;
+                }
+                else
+                {
+                    message = "fail to submit";
+                }
+            }
+            else
+            {
+                message = "fail to submit";
+            }
+        }
+        else
+        {
+            message = "plese check the date input";
+            //Chenck form data again
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+}
