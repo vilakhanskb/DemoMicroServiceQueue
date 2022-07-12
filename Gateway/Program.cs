@@ -84,7 +84,7 @@ app.MapPut("/updatecustomer", (CustomerTest customer) =>
 .WithName("updatecustomer");
 
 
-app.MapDelete("/deletecustomer", (string id) =>
+app.MapDelete("/deletecustomer/{id}", (string id) =>
 {
     return Results.Ok(new { code = 200, message = "Delete Successful." });
 })
