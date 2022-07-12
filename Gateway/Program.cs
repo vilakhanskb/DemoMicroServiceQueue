@@ -69,6 +69,37 @@ app.MapPost("/customerfunc", async (IQueueService queueService) =>
 })
 .WithName("customerfunc");
 
+//For test httpClient
+app.MapPost("/createcustomer", (CustomerTest customer) =>
+{
+    return Results.Ok(new { code = 200, message = "Created Successful." });
+})
+.WithName("createcustomer");
+
+app.MapPut("/updatecustomer", (CustomerTest customer) =>
+{
+
+    return Results.Ok(new { code = 200, message = "Updated Successful." });
+})
+.WithName("updatecustomer");
+
+
+app.MapDelete("/deletecustomer", (string id) =>
+{
+    return Results.Ok(new { code = 200, message = "Delete Successful." });
+})
+.WithName("deletecustomer");
+
+app.MapGet("/getcustomer", () =>
+{
+    List<CustomerTest> ListCustomer = new List<CustomerTest>();
+    ListCustomer.Add(new CustomerTest(1, "Vueyang","Test", 26));
+    ListCustomer.Add(new CustomerTest(2, "Tong","Test", 29));
+    ListCustomer.Add(new CustomerTest(3, "Kar","Test", 40));
+
+    return Results.Ok(new { code = 200, message = "Delete Successful.", data = ListCustomer });
+})
+.WithName("getcustomer");
 
 app.Run();
 
@@ -89,6 +120,11 @@ internal record OpenOrders(string id, string datetime, string item, int amount, 
 
 }
 internal record Customer(string name, string lastname, int age)
+{
+
+}
+
+internal record CustomerTest(int id,string name, string lastname, int age)
 {
 
 }
