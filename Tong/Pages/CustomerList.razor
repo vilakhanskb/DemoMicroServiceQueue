@@ -1,0 +1,102 @@
+﻿@page "/customerlist"
+@using HttpClientService
+@using Tong.NewFolder
+@inject IHttpService HttpClient
+@using System.Text.Json
+<EditForm Model="createModel" OnSubmit="submit">
+    <DataAnnotationsValidator />
+
+    <label>Id</label>
+    <input type="number" class="form-control" @bind="createModel.id" />
+    <ValidationMessage For="@(() => createModel.id)" />
+    <label>Firstname</label>
+    <input type="text" class="form-control" @bind="createModel.name" />
+    <ValidationMessage For="@(() => createModel.name)" />
+    <label>Lastname</label>
+    <input type="text" class="form-control" @bind="createModel.lastname" />
+    <label>Age</label>
+    <input type="number" class="form-control" @bind="createModel.age" />
+    <button class="btn btn-primary" type="submit">Submit</button>
+</EditForm>
+<h3>CustomerList</h3>
+@if (customerresult != null)
+{
+    if (customerresult.Count > 0)
+    {
+        <table>
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Firstname</th>
+                    <th>Lastname</th>
+                    <th>Age</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in customerresult)
+                {
+                    <tr>
+                        <td>@item.id</td>
+                        <td>@item.name</td>
+                        <td>@item.lastname</td>
+                        <td>@item.age</td>
+
+                    </tr>
+                }
+            </tbody>
+
+        </table>
+    }
+    else
+    {
+        <h2>No records</h2>
+    }
+    <h2>@message</h2>
+}
+
+@code {
+    List<Datum> customerresult = new();
+    Datum createModel = new();
+    string message = "";
+    private async Task submit(EditContext context)
+    {
+        var invalid = context.Validate();
+        if (invalid)
+        {
+            var result = await HttpClient.Post<Datum, RespondModel>("http://localhost:5289/createcustomer", createModel).ConfigureAwait(false);
+            if (result.Success)
+            {
+                if (result.Response.code == 200)
+                {
+                    message = result.Response.message;
+                    var resultJson = JsonSerializer.Deserialize<RespondModel>(result.HttpResponseMessage.Content.ReadAsByteArrayAsync().Result);
+                }
+                else
+                {
+                    message = result.Response.message;
+                }
+            }
+            else
+            {
+
+
+            }
+        }
+        else
+        {
+
+        }
+
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await HttpClient.Get<CustomerDB>("http://localhost:5289/getcustomer").ConfigureAwait(false);
+        if (result.Success)
+        {
+            if (result.Response.code == 200)
+            {
+                customerresult = result.Response.data;
+            }
+        }
+    }
+}
